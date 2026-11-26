@@ -151,15 +151,15 @@ footer li a:hover{color:var(--red)}
 @media (max-width:480px){.quick .grid{grid-template-columns:1fr}.quick a{border-right:0!important;border-bottom:1px solid var(--line)}.fcols{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
-/* dashboard */
-.dash h2{font-size:22px;letter-spacing:-.5px}
-.dash .sub{color:var(--muted);font-size:14px;margin:4px 0 18px}
+/* dashboard + verification */
+.dash h2,.verify h2{font-size:22px;letter-spacing:-.5px}
+.dash .sub,.verify .sub{color:var(--muted);font-size:14px;margin:4px 0 18px}
 .dash .bal{font-size:38px;font-weight:800;letter-spacing:-1.4px;margin-bottom:14px}
 .dash ul{list-style:none;margin-bottom:18px}
 .dash li{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
 .dash li .in{color:#0a7a3d}
-.dash .btn{width:100%}
-.dash[hidden],.login[hidden]{display:none}
+.dash .btn,.verify .btn{width:100%}
+.dash[hidden],.login[hidden],.verify[hidden]{display:none}
 
 /* apply / auth dialogs */
 dialog{border:0;border-radius:20px;padding:32px;width:min(460px,92vw);margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.35)}
@@ -175,6 +175,7 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
 .tabs{display:flex;gap:8px;margin-bottom:18px}
 .tabs button{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:600;cursor:pointer}
 .tabs button.on{border-color:var(--red);background:var(--sand);color:var(--red)}
+.verify-badge{display:inline-block;background:#e8f5e9;color:#0a7a3d;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -217,14 +218,13 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
       </div>
     </div>
 
-    <!-- Auth card: Sign in / Sign up (ID-verified) -->
+    <!-- Auth card -->
     <div class="login" id="authCard">
       <div class="tabs">
         <button type="button" class="on" id="tabSignIn">Sign in</button>
         <button type="button" id="tabSignUp">Sign up</button>
       </div>
 
-      <!-- Sign in -->
       <form id="loginForm" novalidate>
         <h2>Log in with your ID</h2>
         <p class="sub">Demo: ID 8001015009087 · PIN 12345</p>
@@ -235,7 +235,6 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
         <div class="links"><a id="switchToSignUp">Need an account? Sign up</a></div>
       </form>
 
-      <!-- Sign up -->
       <form id="signupForm" hidden novalidate>
         <h2>Create your account</h2>
         <p class="sub">We verify every customer with a valid South African ID number.</p>
@@ -244,13 +243,31 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
         <div class="field"><label for="suEmail">Email</label><input id="suEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="suPhone">Cellphone</label><input id="suPhone" type="tel" autocomplete="tel" placeholder="082 123 4567" required></div>
         <div class="field"><label for="suPin">Choose a 5-digit PIN</label><input id="suPin" type="password" inputmode="numeric" maxlength="5" required></div>
-        <button class="btn" type="submit">Sign up &amp; verify ID</button>
+        <button class="btn" type="submit">Sign up</button>
         <div class="msg" id="signupMsg" role="alert"></div>
         <div class="links"><a id="switchToSignIn">Already have an account? Sign in</a></div>
       </form>
     </div>
 
-    <!-- Dashboard (shown after successful sign-in / sign-up) -->
+    <!-- Verification step (required after every sign-in / sign-up) -->
+    <section class="login verify" id="verifyPanel" hidden aria-live="polite">
+      <div class="verify-badge">Identity verification required</div>
+      <h2>Verify your identity</h2>
+      <p class="sub">To protect your account, re-enter your South African ID number. This step is required every time you sign in.</p>
+      <form id="verifyForm" novalidate>
+        <div class="field">
+          <label for="verifyId">Confirm your 13-digit ID number</label>
+          <input id="verifyId" inputmode="numeric" maxlength="13" autocomplete="off" placeholder="Re-enter your ID number" required>
+        </div>
+        <button class="btn" type="submit">Verify &amp; continue</button>
+        <div class="msg" id="verifyMsg" role="alert"></div>
+        <div class="links" style="margin-top:16px">
+          <a id="cancelVerify" href="#">Cancel and sign out</a>
+        </div>
+      </form>
+    </section>
+
+    <!-- Dashboard (only after successful verification) -->
     <section class="login dash" id="dash" hidden aria-live="polite" style="padding:30px">
       <h2 id="dName"></h2>
       <p class="sub" id="dType"></p>
@@ -347,7 +364,7 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
       <div><h4>Support</h4><ul><li><a href="#">Contact us</a></li><li><a href="#">Find a branch or ATM</a></li><li><a href="#">Fees and pricing</a></li><li><a href="#">Report fraud</a></li></ul></div>
       <div><h4>About</h4><ul><li><a href="#">Careers</a></li><li><a href="#">Media</a></li><li><a href="#">Privacy notice</a></li><li><a href="#">Terms of use</a></li></ul></div>
     </div>
-    <p class="legal">Demo full-stack project for design purposes. Not an official Absa website. Never share your PIN, password or OTP with anyone, including bank staff. All identity numbers are verified with the official South African ID checksum before an account is created or a session is started.</p>
+    <p class="legal">Demo full-stack project for design purposes. Not an official Absa website. Never share your PIN, password or OTP with anyone, including bank staff. Every sign-in requires a second identity verification step using your South African ID number before account access is granted.</p>
   </div>
 </footer>
 
@@ -370,11 +387,11 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
     </div>
     <div class="field"><label for="applyPin">Choose a 5-digit PIN</label><input id="applyPin" name="pin" type="password" inputmode="numeric" maxlength="5" required></div>
     <div class="msg" id="aMsg" role="alert"></div>
-    <div class="row2"><button class="btn ghost" type="button" id="closeApply">Cancel</button><button class="btn" type="submit">Submit &amp; verify ID</button></div>
+    <div class="row2"><button class="btn ghost" type="button" id="closeApply">Cancel</button><button class="btn" type="submit">Submit</button></div>
   </form>
   <div id="done" hidden>
     <h2>Application received</h2>
-    <p class="sub">Your ID was verified and your account has been created. Keep this reference. A consultant will call you within one working day.</p>
+    <p class="sub">Your ID was verified and your account has been created. You must complete the identity verification step after signing in.</p>
     <div class="ref" id="ref"></div>
     <button class="btn" type="button" id="closeDone" style="width:100%">Done</button>
   </div>
@@ -384,7 +401,7 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
 const $ = id => document.getElementById(id);
 const R = n => 'R ' + Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/,/g, ' ');
 
-/* ---------- South African ID validation (Luhn + basic date checks) ---------- */
+/* ---------- SA ID validation ---------- */
 function validId(id) {
   if (!/^\d{13}$/.test(id)) return false;
   const mm = +id.slice(2, 4), dd = +id.slice(4, 6);
@@ -398,9 +415,10 @@ function validId(id) {
   return sum % 10 === 0;
 }
 
-/* ---------- Persistent user store (localStorage) ---------- */
+/* ---------- Storage ---------- */
 const USERS_KEY = 'absa_users_v1';
 const SESSION_KEY = 'absa_session_id';
+const VERIFIED_KEY = 'absa_session_verified';
 
 function loadUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch { return {}; }
@@ -417,11 +435,20 @@ function setSessionId(id) {
     else sessionStorage.removeItem(SESSION_KEY);
   } catch {}
 }
+function isVerified() {
+  try { return sessionStorage.getItem(VERIFIED_KEY) === '1'; } catch { return false; }
+}
+function setVerified(v) {
+  try {
+    if (v) sessionStorage.setItem(VERIFIED_KEY, '1');
+    else sessionStorage.removeItem(VERIFIED_KEY);
+  } catch {}
+}
 
-/* Seed demo customer (ID verified) so the demo login works out of the box */
+/* Seed demo customer */
 (function seedDemo() {
   const users = loadUsers();
-  const demoId = '8001015009087'; // valid checksum demo ID
+  const demoId = '8001015009087';
   if (!users[demoId]) {
     users[demoId] = {
       name: 'Thandi Mokoena',
@@ -449,7 +476,7 @@ function generateAccountNumber() {
   return '4' + Array.from(crypto.getRandomValues(new Uint8Array(9)), x => (x % 10)).join('');
 }
 
-/* ---------- Auth API (local) ---------- */
+/* ---------- Auth API ---------- */
 async function apiLogin({ idNumber, pin }) {
   const id = String(idNumber || '').replace(/\D/g, '');
   if (!validId(id)) throw new Error('Enter a valid 13-digit South African ID number.');
@@ -459,6 +486,7 @@ async function apiLogin({ idNumber, pin }) {
     throw new Error('ID number or PIN is incorrect.');
   }
   setSessionId(id);
+  setVerified(false);               // always require verification after login
   return { ok: true, user };
 }
 
@@ -480,21 +508,25 @@ async function apiSignup({ fullName, idNumber, email, phone, pin }) {
 
   const account = generateAccountNumber();
   const user = {
-    name,
-    id,
-    email: mail,
-    phone: cell,
-    pin: p,
-    account,
-    type: 'Cheque account',
-    balance: 0,
-    transactions: [],
+    name, id, email: mail, phone: cell, pin: p,
+    account, type: 'Cheque account', balance: 0, transactions: [],
     createdAt: new Date().toISOString()
   };
   users[id] = user;
   saveUsers(users);
   setSessionId(id);
+  setVerified(false);               // require verification after sign-up too
   return { ok: true, user, reference: 'ABS-' + Array.from(crypto.getRandomValues(new Uint8Array(4)), x => x.toString(16).padStart(2, '0')).join('').toUpperCase() };
+}
+
+async function apiVerify({ idNumber }) {
+  const sessionId = getSessionId();
+  if (!sessionId) throw new Error('Session expired. Please sign in again.');
+  const id = String(idNumber || '').replace(/\D/g, '');
+  if (!validId(id)) throw new Error('Enter a valid 13-digit South African ID number.');
+  if (id !== sessionId) throw new Error('ID number does not match the signed-in account.');
+  setVerified(true);
+  return { ok: true };
 }
 
 async function apiMe() {
@@ -504,6 +536,7 @@ async function apiMe() {
   const user = users[id];
   if (!user) {
     setSessionId(null);
+    setVerified(false);
     throw new Error('Please log in again.');
   }
   return user;
@@ -511,6 +544,7 @@ async function apiMe() {
 
 async function apiLogout() {
   setSessionId(null);
+  setVerified(false);
   return { ok: true };
 }
 
@@ -524,8 +558,33 @@ async function apiLoanQuote({ amount, term, rate }) {
   return { payment, total: payment * n, interest: payment * n - P };
 }
 
-/* ---------- UI helpers ---------- */
+/* ---------- UI state machine ---------- */
+function hideAllAuthPanels() {
+  $('authCard').hidden = true;
+  $('verifyPanel').hidden = true;
+  $('dash').hidden = true;
+}
+
+function showAuth() {
+  hideAllAuthPanels();
+  $('authCard').hidden = false;
+  showSignIn();
+}
+
+function showVerify() {
+  hideAllAuthPanels();
+  $('verifyPanel').hidden = false;
+  $('verifyId').value = '';
+  $('verifyMsg').textContent = '';
+  $('verifyId').focus();
+}
+
 async function showDashboard() {
+  // Only allow dashboard if the session is verified
+  if (!isVerified()) {
+    showVerify();
+    return;
+  }
   const me = await apiMe();
   $('dName').textContent = 'Hi, ' + me.name.split(' ')[0];
   $('dType').textContent = me.type + ' · ' + me.account + ' · ID verified';
@@ -540,14 +599,8 @@ async function showDashboard() {
     li.append(a, b);
     return li;
   }));
-  $('authCard').hidden = true;
+  hideAllAuthPanels();
   $('dash').hidden = false;
-}
-
-function showAuth() {
-  $('dash').hidden = true;
-  $('authCard').hidden = false;
-  showSignIn();
 }
 
 function showSignIn() {
@@ -578,7 +631,7 @@ $('loginForm').addEventListener('submit', async e => {
   try {
     await apiLogin({ idNumber: $('loginId').value, pin: $('loginPin').value });
     $('loginPin').value = '';
-    await showDashboard();
+    showVerify();                         // ← force verification step
   } catch (err) {
     msg.textContent = err.message;
   }
@@ -598,12 +651,30 @@ $('signupForm').addEventListener('submit', async e => {
       phone: $('suPhone').value,
       pin: $('suPin').value
     });
-    await showDashboard();
+    showVerify();                         // ← force verification step
   } catch (err) {
     msg.textContent = err.message;
   } finally {
     btn.disabled = false;
   }
+});
+
+$('verifyForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('verifyMsg');
+  msg.textContent = '';
+  try {
+    await apiVerify({ idNumber: $('verifyId').value });
+    await showDashboard();                // now unlocked
+  } catch (err) {
+    msg.textContent = err.message;
+  }
+});
+
+$('cancelVerify').addEventListener('click', async e => {
+  e.preventDefault();
+  await apiLogout();
+  showAuth();
 });
 
 $('logout').addEventListener('click', async () => {
@@ -612,8 +683,23 @@ $('logout').addEventListener('click', async () => {
   $('loginId').focus();
 });
 
-/* Restore session if already signed in */
-apiMe().then(showDashboard).catch(() => {});
+/* On load: restore correct state */
+(async function init() {
+  const id = getSessionId();
+  if (!id) {
+    showAuth();
+    return;
+  }
+  if (!isVerified()) {
+    showVerify();                         // still need verification
+    return;
+  }
+  try {
+    await showDashboard();
+  } catch {
+    showAuth();
+  }
+})();
 
 /* mobile menu */
 const menuBtn = $('menuBtn'), nav = $('nav');
@@ -646,7 +732,7 @@ async function quote() {
 }));
 quote();
 
-/* Open an account dialog (also creates a verified user) */
+/* Open an account dialog */
 const dlg = $('apply'), form = $('applyForm'), aMsg = $('aMsg');
 document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => {
   form.hidden = false;
@@ -675,8 +761,7 @@ form.addEventListener('submit', async e => {
     form.reset();
     form.hidden = true;
     $('done').hidden = false;
-    // also show dashboard if they were not already signed in
-    try { await showDashboard(); } catch {}
+    // After creating the account the user still has to go through the verification step
   } catch (err) {
     aMsg.textContent = err.message;
   } finally {
