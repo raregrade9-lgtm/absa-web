@@ -18,7 +18,7 @@
 html{scroll-behavior:smooth}
 body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--white);line-height:1.55}
 a{color:inherit;text-decoration:none}
-button,input{font:inherit}
+button,input,select{font:inherit}
 :focus-visible{outline:3px solid #1d1d24;outline-offset:2px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 
@@ -60,11 +60,11 @@ nav a:hover{background:var(--sand)}
 .login .sub{color:var(--muted);font-size:14px;margin:4px 0 20px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
-.field input{width:100%;padding:13px 14px;border:1.5px solid #cfcac4;border-radius:10px;background:#fff}
-.field input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(220,0,50,.18)}
+.field input,.field select{width:100%;padding:13px 14px;border:1.5px solid #cfcac4;border-radius:10px;background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(220,0,50,.18)}
 .login .btn{width:100%;margin-top:6px}
 .login .links{display:flex;justify-content:space-between;margin-top:16px;font-size:14px}
-.login .links a{color:var(--red);font-weight:600}
+.login .links a{color:var(--red);font-weight:600;cursor:pointer}
 .msg{margin-top:12px;font-size:14px;color:var(--red-dark);min-height:20px}
 
 /* quick actions */
@@ -161,7 +161,7 @@ footer li a:hover{color:var(--red)}
 .dash .btn{width:100%}
 .dash[hidden],.login[hidden]{display:none}
 
-/* apply dialog */
+/* apply / auth dialogs */
 dialog{border:0;border-radius:20px;padding:32px;width:min(460px,92vw);margin:auto;box-shadow:0 30px 80px rgba(0,0,0,.35)}
 dialog::backdrop{background:rgba(29,29,36,.6)}
 dialog h2{font-size:24px;letter-spacing:-.6px}
@@ -172,6 +172,9 @@ dialog .row2{display:flex;gap:12px;margin-top:8px}
 dialog .row2 .btn{flex:1}
 dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;margin:10px 0 18px}
 .fine#total{margin-top:10px}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tabs button{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:600;cursor:pointer}
+.tabs button.on{border-color:var(--red);background:var(--sand);color:var(--red)}
 </style>
 </head>
 <body>
@@ -213,21 +216,48 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
         <a class="btn ghost" style="color:#fff;border-color:#fff" href="#app">Get the app</a>
       </div>
     </div>
-    <form class="login" id="login" novalidate>
-      <h2>Log in to Internet Banking</h2>
-      <p class="sub">Demo login: account 4000000001, PIN 12345.</p>
-      <div class="field"><label for="acc">Account or card number</label><input id="acc" inputmode="numeric" autocomplete="username" placeholder="Demo: 4000000001"></div>
-      <div class="field"><label for="pin">PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="5" autocomplete="current-password"></div>
-      <button class="btn" type="submit">Log in</button>
-      <div class="msg" id="msg" role="alert"></div>
-      <div class="links"><a href="#">Forgot PIN?</a><a href="#">Register</a></div>
-    </form>
-<section class="login dash" id="dash" hidden aria-live="polite" style="padding:30px">
-  <h2 id="dName"></h2><p class="sub" id="dType"></p>
-  <div class="bal" id="dBal"></div>
-  <ul id="dTx"></ul>
-  <button class="btn ghost" id="logout" type="button">Log out</button>
-</section>
+
+    <!-- Auth card: Sign in / Sign up (ID-verified) -->
+    <div class="login" id="authCard">
+      <div class="tabs">
+        <button type="button" class="on" id="tabSignIn">Sign in</button>
+        <button type="button" id="tabSignUp">Sign up</button>
+      </div>
+
+      <!-- Sign in -->
+      <form id="loginForm" novalidate>
+        <h2>Log in with your ID</h2>
+        <p class="sub">Demo: ID 8001015009087 · PIN 12345</p>
+        <div class="field"><label for="loginId">South African ID number</label><input id="loginId" inputmode="numeric" maxlength="13" autocomplete="username" placeholder="13-digit ID number" required></div>
+        <div class="field"><label for="loginPin">PIN</label><input id="loginPin" type="password" inputmode="numeric" maxlength="5" autocomplete="current-password" required></div>
+        <button class="btn" type="submit">Sign in</button>
+        <div class="msg" id="loginMsg" role="alert"></div>
+        <div class="links"><a id="switchToSignUp">Need an account? Sign up</a></div>
+      </form>
+
+      <!-- Sign up -->
+      <form id="signupForm" hidden novalidate>
+        <h2>Create your account</h2>
+        <p class="sub">We verify every customer with a valid South African ID number.</p>
+        <div class="field"><label for="suName">Full name</label><input id="suName" autocomplete="name" required></div>
+        <div class="field"><label for="suId">South African ID number</label><input id="suId" inputmode="numeric" maxlength="13" required></div>
+        <div class="field"><label for="suEmail">Email</label><input id="suEmail" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="suPhone">Cellphone</label><input id="suPhone" type="tel" autocomplete="tel" placeholder="082 123 4567" required></div>
+        <div class="field"><label for="suPin">Choose a 5-digit PIN</label><input id="suPin" type="password" inputmode="numeric" maxlength="5" required></div>
+        <button class="btn" type="submit">Sign up &amp; verify ID</button>
+        <div class="msg" id="signupMsg" role="alert"></div>
+        <div class="links"><a id="switchToSignIn">Already have an account? Sign in</a></div>
+      </form>
+    </div>
+
+    <!-- Dashboard (shown after successful sign-in / sign-up) -->
+    <section class="login dash" id="dash" hidden aria-live="polite" style="padding:30px">
+      <h2 id="dName"></h2>
+      <p class="sub" id="dType"></p>
+      <div class="bal" id="dBal"></div>
+      <ul id="dTx"></ul>
+      <button class="btn ghost" id="logout" type="button">Log out</button>
+    </section>
   </div>
 </div>
 
@@ -278,7 +308,7 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
   <div class="wrap">
     <div>
       <h2 class="title">Your bank, in your pocket</h2>
-      <p class="lede">Do your banking from anywhere, without queueing or calling.</p>
+      <p class="lede">Do your banking from anywhere, without queuing or calling.</p>
       <ul>
         <li>Sign in with your fingerprint or face</li>
         <li>Pay beneficiaries and share proof of payment</li>
@@ -317,75 +347,44 @@ dialog .ref{font-size:30px;font-weight:800;color:var(--red);letter-spacing:1px;m
       <div><h4>Support</h4><ul><li><a href="#">Contact us</a></li><li><a href="#">Find a branch or ATM</a></li><li><a href="#">Fees and pricing</a></li><li><a href="#">Report fraud</a></li></ul></div>
       <div><h4>About</h4><ul><li><a href="#">Careers</a></li><li><a href="#">Media</a></li><li><a href="#">Privacy notice</a></li><li><a href="#">Terms of use</a></li></ul></div>
     </div>
-    <p class="legal">Demo full-stack project for design purposes. Not an official Absa website. Never share your PIN, password or OTP with anyone, including bank staff.</p>
+    <p class="legal">Demo full-stack project for design purposes. Not an official Absa website. Never share your PIN, password or OTP with anyone, including bank staff. All identity numbers are verified with the official South African ID checksum before an account is created or a session is started.</p>
   </div>
 </footer>
 
 <dialog id="apply" aria-labelledby="aTitle">
   <form id="applyForm" novalidate>
     <h2 id="aTitle">Open an account</h2>
-    <p class="sub">You will need your South African ID. We will contact you to finish.</p>
+    <p class="sub">You will need your South African ID. We verify it before creating your account.</p>
     <div class="field"><label for="fullName">Full name</label><input id="fullName" name="fullName" autocomplete="name" required></div>
     <div class="field"><label for="idNumber">ID number</label><input id="idNumber" name="idNumber" inputmode="numeric" maxlength="13" required></div>
     <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
     <div class="field"><label for="phone">Cellphone</label><input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="082 123 4567" required></div>
-    <div class="field"><label for="product">Product</label><select id="product" name="product"><option>Everyday account</option><option>Savings account</option><option>Credit card</option><option>Home loan</option><option>Business account</option></select></div>
+    <div class="field"><label for="product">Product</label>
+      <select id="product" name="product">
+        <option>Everyday account</option>
+        <option>Savings account</option>
+        <option>Credit card</option>
+        <option>Home loan</option>
+        <option>Business account</option>
+      </select>
+    </div>
+    <div class="field"><label for="applyPin">Choose a 5-digit PIN</label><input id="applyPin" name="pin" type="password" inputmode="numeric" maxlength="5" required></div>
     <div class="msg" id="aMsg" role="alert"></div>
-    <div class="row2"><button class="btn ghost" type="button" id="closeApply">Cancel</button><button class="btn" type="submit">Submit application</button></div>
+    <div class="row2"><button class="btn ghost" type="button" id="closeApply">Cancel</button><button class="btn" type="submit">Submit &amp; verify ID</button></div>
   </form>
   <div id="done" hidden>
     <h2>Application received</h2>
-    <p class="sub">Keep this reference. A consultant will call you within one working day.</p>
+    <p class="sub">Your ID was verified and your account has been created. Keep this reference. A consultant will call you within one working day.</p>
     <div class="ref" id="ref"></div>
     <button class="btn" type="button" id="closeDone" style="width:100%">Done</button>
   </div>
 </dialog>
 
-
 <script>
 const $ = id => document.getElementById(id);
 const R = n => 'R ' + Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/,/g, ' ');
 
-async function remote(url, body) {
-  const res = await fetch(url, {
-    method: body ? 'POST' : 'GET',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'same-origin',
-    body: body ? JSON.stringify(body) : undefined
-  });
-  const data = await res.json().catch(() => ({}));
-  if (res.status === 404 && !data.error) { const e = new Error('No backend'); e.noBackend = true; throw e; }
-  if (!res.ok) throw new Error(data.error || 'Something went wrong. Try again.');
-  return data;
-}
-
-/* Uses the Node server's /api when it is running; otherwise falls back to the demo backend below. */
-let backend = true;
-async function api(url, body) {
-  if (backend) {
-    try { return await remote(url, body); }
-    catch (e) { if (!(e instanceof TypeError) && !e.noBackend) throw e; backend = false; }
-  }
-  return local(url, body);
-}
-
-/* ---- Built-in demo backend (works when this file is opened directly) ---- */
-const DEMO = {
-  account: '4000000001', pin: '12345', name: 'Thandi Mokoena', type: 'Cheque account', balance: 12480.55,
-  transactions: [
-    { date: '2026-11-24', label: 'Pick n Pay', amount: -342.10 },
-    { date: '2026-11-23', label: 'Salary', amount: 18900.00 },
-    { date: '2026-11-22', label: 'Eskom prepaid', amount: -500.00 },
-    { date: '2026-11-21', label: 'Uber', amount: -96.40 },
-    { date: '2026-11-20', label: 'Savings transfer', amount: -1000.00 }
-  ]
-};
-let signedIn = false;
-try { signedIn = sessionStorage.getItem('absa_demo') === '1'; } catch {}
-function setSigned(v) {
-  signedIn = v;
-  try { v ? sessionStorage.setItem('absa_demo', '1') : sessionStorage.removeItem('absa_demo'); } catch {}
-}
+/* ---------- South African ID validation (Luhn + basic date checks) ---------- */
 function validId(id) {
   if (!/^\d{13}$/.test(id)) return false;
   const mm = +id.slice(2, 4), dd = +id.slice(4, 6);
@@ -398,47 +397,223 @@ function validId(id) {
   }
   return sum % 10 === 0;
 }
-async function local(url, b = {}) {
-  if (url === '/api/login') {
-    const acc = String(b.account || '').replace(/\D/g, '');
-    if (acc !== DEMO.account || String(b.pin || '') !== DEMO.pin) throw new Error('Account number or PIN is incorrect.');
-    setSigned(true);
-    return { ok: true };
-  }
-  if (url === '/api/logout') { setSigned(false); return { ok: true }; }
-  if (url === '/api/me') {
-    if (!signedIn) throw new Error('Please log in again.');
-    const { name, account, type, balance, transactions } = DEMO;
-    return { name, account, type, balance, transactions };
-  }
-  if (url === '/api/loan/quote') {
-    const P = Number(b.amount), n = Number(b.term), apr = Number(b.rate);
-    if (!(P >= 10000 && P <= 500000) || !(n >= 12 && n <= 84) || !(apr >= 8 && apr <= 26)) throw new Error('Loan values are out of range.');
-    const r = apr / 100 / 12;
-    const payment = P * r / (1 - Math.pow(1 + r, -n));
-    return { payment, total: payment * n, interest: payment * n - P };
-  }
-  if (url === '/api/applications') {
-    const name = String(b.fullName || '').trim();
-    const id = String(b.idNumber || '').replace(/\s/g, '');
-    const email = String(b.email || '').trim();
-    const phone = String(b.phone || '').replace(/[\s-]/g, '');
-    const product = String(b.product || '');
-    if (name.length < 3) throw new Error('Enter your full name.');
-    if (!validId(id)) throw new Error('Enter a valid 13-digit South African ID number.');
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Enter a valid email address.');
-    if (!/^(\+27|0)\d{9}$/.test(phone)) throw new Error('Enter a valid South African cellphone number.');
-    if (!['Everyday account', 'Savings account', 'Credit card', 'Home loan', 'Business account'].includes(product)) throw new Error('Choose a product.');
-    const reference = 'ABS-' + Array.from(crypto.getRandomValues(new Uint8Array(4)), x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
-    try {
-      const all = JSON.parse(localStorage.getItem('absa_apps') || '[]');
-      all.push({ reference, name, idLast4: id.slice(-4), email, phone, product, createdAt: new Date().toISOString() });
-      localStorage.setItem('absa_apps', JSON.stringify(all));
-    } catch {}
-    return { reference };
-  }
-  throw new Error('Not found.');
+
+/* ---------- Persistent user store (localStorage) ---------- */
+const USERS_KEY = 'absa_users_v1';
+const SESSION_KEY = 'absa_session_id';
+
+function loadUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch { return {}; }
 }
+function saveUsers(users) {
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch {}
+}
+function getSessionId() {
+  try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; }
+}
+function setSessionId(id) {
+  try {
+    if (id) sessionStorage.setItem(SESSION_KEY, id);
+    else sessionStorage.removeItem(SESSION_KEY);
+  } catch {}
+}
+
+/* Seed demo customer (ID verified) so the demo login works out of the box */
+(function seedDemo() {
+  const users = loadUsers();
+  const demoId = '8001015009087'; // valid checksum demo ID
+  if (!users[demoId]) {
+    users[demoId] = {
+      name: 'Thandi Mokoena',
+      id: demoId,
+      email: 'thandi@example.com',
+      phone: '0821234567',
+      pin: '12345',
+      account: '4000000001',
+      type: 'Cheque account',
+      balance: 12480.55,
+      transactions: [
+        { date: '2026-11-24', label: 'Pick n Pay', amount: -342.10 },
+        { date: '2026-11-23', label: 'Salary', amount: 18900.00 },
+        { date: '2026-11-22', label: 'Eskom prepaid', amount: -500.00 },
+        { date: '2026-11-21', label: 'Uber', amount: -96.40 },
+        { date: '2026-11-20', label: 'Savings transfer', amount: -1000.00 }
+      ],
+      createdAt: new Date().toISOString()
+    };
+    saveUsers(users);
+  }
+})();
+
+function generateAccountNumber() {
+  return '4' + Array.from(crypto.getRandomValues(new Uint8Array(9)), x => (x % 10)).join('');
+}
+
+/* ---------- Auth API (local) ---------- */
+async function apiLogin({ idNumber, pin }) {
+  const id = String(idNumber || '').replace(/\D/g, '');
+  if (!validId(id)) throw new Error('Enter a valid 13-digit South African ID number.');
+  const users = loadUsers();
+  const user = users[id];
+  if (!user || String(user.pin) !== String(pin || '')) {
+    throw new Error('ID number or PIN is incorrect.');
+  }
+  setSessionId(id);
+  return { ok: true, user };
+}
+
+async function apiSignup({ fullName, idNumber, email, phone, pin }) {
+  const name = String(fullName || '').trim();
+  const id = String(idNumber || '').replace(/\s/g, '');
+  const mail = String(email || '').trim();
+  const cell = String(phone || '').replace(/[\s-]/g, '');
+  const p = String(pin || '');
+
+  if (name.length < 3) throw new Error('Enter your full name.');
+  if (!validId(id)) throw new Error('Enter a valid 13-digit South African ID number.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) throw new Error('Enter a valid email address.');
+  if (!/^(\+27|0)\d{9}$/.test(cell)) throw new Error('Enter a valid South African cellphone number.');
+  if (!/^\d{5}$/.test(p)) throw new Error('PIN must be exactly 5 digits.');
+
+  const users = loadUsers();
+  if (users[id]) throw new Error('An account already exists for this ID number. Please sign in.');
+
+  const account = generateAccountNumber();
+  const user = {
+    name,
+    id,
+    email: mail,
+    phone: cell,
+    pin: p,
+    account,
+    type: 'Cheque account',
+    balance: 0,
+    transactions: [],
+    createdAt: new Date().toISOString()
+  };
+  users[id] = user;
+  saveUsers(users);
+  setSessionId(id);
+  return { ok: true, user, reference: 'ABS-' + Array.from(crypto.getRandomValues(new Uint8Array(4)), x => x.toString(16).padStart(2, '0')).join('').toUpperCase() };
+}
+
+async function apiMe() {
+  const id = getSessionId();
+  if (!id) throw new Error('Please log in again.');
+  const users = loadUsers();
+  const user = users[id];
+  if (!user) {
+    setSessionId(null);
+    throw new Error('Please log in again.');
+  }
+  return user;
+}
+
+async function apiLogout() {
+  setSessionId(null);
+  return { ok: true };
+}
+
+async function apiLoanQuote({ amount, term, rate }) {
+  const P = Number(amount), n = Number(term), apr = Number(rate);
+  if (!(P >= 10000 && P <= 500000) || !(n >= 12 && n <= 84) || !(apr >= 8 && apr <= 26)) {
+    throw new Error('Loan values are out of range.');
+  }
+  const r = apr / 100 / 12;
+  const payment = P * r / (1 - Math.pow(1 + r, -n));
+  return { payment, total: payment * n, interest: payment * n - P };
+}
+
+/* ---------- UI helpers ---------- */
+async function showDashboard() {
+  const me = await apiMe();
+  $('dName').textContent = 'Hi, ' + me.name.split(' ')[0];
+  $('dType').textContent = me.type + ' · ' + me.account + ' · ID verified';
+  $('dBal').textContent = R(me.balance);
+  const list = $('dTx');
+  list.replaceChildren(...(me.transactions || []).map(t => {
+    const li = document.createElement('li');
+    const a = document.createElement('span'); a.textContent = t.label;
+    const b = document.createElement('b');
+    b.textContent = (t.amount > 0 ? '+' : '-') + R(Math.abs(t.amount));
+    if (t.amount > 0) b.className = 'in';
+    li.append(a, b);
+    return li;
+  }));
+  $('authCard').hidden = true;
+  $('dash').hidden = false;
+}
+
+function showAuth() {
+  $('dash').hidden = true;
+  $('authCard').hidden = false;
+  showSignIn();
+}
+
+function showSignIn() {
+  $('loginForm').hidden = false;
+  $('signupForm').hidden = true;
+  $('tabSignIn').classList.add('on');
+  $('tabSignUp').classList.remove('on');
+  $('loginMsg').textContent = '';
+}
+function showSignUp() {
+  $('loginForm').hidden = true;
+  $('signupForm').hidden = false;
+  $('tabSignIn').classList.remove('on');
+  $('tabSignUp').classList.add('on');
+  $('signupMsg').textContent = '';
+}
+
+/* ---------- Event wiring ---------- */
+$('tabSignIn').addEventListener('click', showSignIn);
+$('tabSignUp').addEventListener('click', showSignUp);
+$('switchToSignUp').addEventListener('click', e => { e.preventDefault(); showSignUp(); });
+$('switchToSignIn').addEventListener('click', e => { e.preventDefault(); showSignIn(); });
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('loginMsg');
+  msg.textContent = '';
+  try {
+    await apiLogin({ idNumber: $('loginId').value, pin: $('loginPin').value });
+    $('loginPin').value = '';
+    await showDashboard();
+  } catch (err) {
+    msg.textContent = err.message;
+  }
+});
+
+$('signupForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('signupMsg');
+  msg.textContent = '';
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true;
+  try {
+    await apiSignup({
+      fullName: $('suName').value,
+      idNumber: $('suId').value,
+      email: $('suEmail').value,
+      phone: $('suPhone').value,
+      pin: $('suPin').value
+    });
+    await showDashboard();
+  } catch (err) {
+    msg.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$('logout').addEventListener('click', async () => {
+  await apiLogout();
+  showAuth();
+  $('loginId').focus();
+});
+
+/* Restore session if already signed in */
+apiMe().then(showDashboard).catch(() => {});
 
 /* mobile menu */
 const menuBtn = $('menuBtn'), nav = $('nav');
@@ -446,50 +621,7 @@ menuBtn.addEventListener('click', () => {
   menuBtn.setAttribute('aria-expanded', nav.classList.toggle('open'));
 });
 
-/* login + dashboard */
-const loginForm = $('login'), dash = $('dash');
-
-async function showDashboard() {
-  const me = await api('/api/me');
-  $('dName').textContent = 'Hi, ' + me.name.split(' ')[0];
-  $('dType').textContent = me.type + ' · ' + me.account;
-  $('dBal').textContent = R(me.balance);
-  const list = $('dTx');
-  list.replaceChildren(...me.transactions.map(t => {
-    const li = document.createElement('li');
-    const a = document.createElement('span'); a.textContent = t.label;
-    const b = document.createElement('b'); b.textContent = (t.amount > 0 ? '+' : '-') + R(Math.abs(t.amount));
-    if (t.amount > 0) b.className = 'in';
-    li.append(a, b);
-    return li;
-  }));
-  loginForm.hidden = true;
-  dash.hidden = false;
-}
-
-loginForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  const msg = $('msg');
-  msg.textContent = '';
-  try {
-    await api('/api/login', { account: $('acc').value, pin: $('pin').value });
-    $('pin').value = '';
-    await showDashboard();
-  } catch (err) {
-    msg.textContent = err.message;
-  }
-});
-
-$('logout').addEventListener('click', async () => {
-  await api('/api/logout', {});
-  dash.hidden = true;
-  loginForm.hidden = false;
-  $('acc').focus();
-});
-
-api('/api/me').then(showDashboard).catch(() => {});
-
-/* loan calculator (calculated by the server) */
+/* loan calculator */
 let timer;
 function updateLabels() {
   $('amtO').textContent = R($('amt').value).replace('.00', '');
@@ -499,7 +631,7 @@ function updateLabels() {
 async function quote() {
   updateLabels();
   try {
-    const q = await api('/api/loan/quote', { amount: +$('amt').value, term: +$('term').value, rate: +$('rate').value });
+    const q = await apiLoanQuote({ amount: +$('amt').value, term: +$('term').value, rate: +$('rate').value });
     $('pay').textContent = R(q.payment);
     $('total').textContent = 'Total repaid ' + R(q.total) + ', of which interest ' + R(q.interest);
   } catch (err) {
@@ -514,7 +646,7 @@ async function quote() {
 }));
 quote();
 
-/* open an account */
+/* Open an account dialog (also creates a verified user) */
 const dlg = $('apply'), form = $('applyForm'), aMsg = $('aMsg');
 document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => {
   form.hidden = false;
@@ -532,11 +664,19 @@ form.addEventListener('submit', async e => {
   btn.disabled = true;
   try {
     const body = Object.fromEntries(new FormData(form));
-    const { reference } = await api('/api/applications', body);
+    const { reference } = await apiSignup({
+      fullName: body.fullName,
+      idNumber: body.idNumber,
+      email: body.email,
+      phone: body.phone,
+      pin: body.pin
+    });
     $('ref').textContent = reference;
     form.reset();
     form.hidden = true;
     $('done').hidden = false;
+    // also show dashboard if they were not already signed in
+    try { await showDashboard(); } catch {}
   } catch (err) {
     aMsg.textContent = err.message;
   } finally {
